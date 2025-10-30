@@ -1,0 +1,1 @@
+# hottel_booking_patterns
