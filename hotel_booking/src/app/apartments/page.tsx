@@ -1,6 +1,6 @@
-// app/apartments/page.tsx
 import Link from "next/link";
-import { Search, MapPin, Home, Star, Calendar, Users } from "lucide-react";
+import { MapPin, Home, Star } from "lucide-react";
+import SearchForm from "@/components/forms/SearchForm";
 
 type Apartment = {
   id: number;
@@ -24,7 +24,6 @@ export default async function ApartmentsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // ДОДАЄМО AWAIT!
   const resolvedParams = await searchParams;
 
   const params = new URLSearchParams();
@@ -34,7 +33,6 @@ export default async function ApartmentsPage({
 
   const apartments: Apartment[] = await getApartments(params);
 
-  // Тепер безпечно читати
   const city = resolvedParams.city as string | undefined;
   const checkIn = resolvedParams.checkIn as string | undefined;
   const checkOut = resolvedParams.checkOut as string | undefined;
@@ -56,68 +54,13 @@ export default async function ApartmentsPage({
         </div>
       </header>
 
-      {/* Search Bar */}
       <div className="max-w-7xl mx-auto px-6 -mt-8 relative z-10">
-        <form
-          action="/apartments"
-          method="GET"
-          className="bg-white rounded-lg shadow-xl p-4 border-4 border-yellow-400"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-            <div className="relative">
-              <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                name="city"
-                placeholder="Where are you going?"
-                defaultValue={city}
-                className="w-full pl-10 pr-3 py-3 text-gray-900 placeholder-gray-500 bg-transparent focus:outline-none"
-              />
-            </div>
-
-            <div className="relative">
-              <Calendar className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <input
-                type="date"
-                name="checkIn"
-                defaultValue={checkIn}
-                className="w-full pl-10 pr-3 py-3 text-gray-900 bg-transparent focus:outline-none cursor-pointer"
-                min={new Date().toISOString().split("T")[0]}
-              />
-            </div>
-
-            <div className="relative">
-              <Calendar className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <input
-                type="date"
-                name="checkOut"
-                defaultValue={checkOut}
-                className="w-full pl-10 pr-3 py-3 text-gray-900 bg-transparent focus:outline-none cursor-pointer"
-                min={checkIn || new Date().toISOString().split("T")[0]}
-              />
-            </div>
-
-            <div className="relative">
-              <Users className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <input
-                type="number"
-                name="guests"
-                min="1"
-                max="4"
-                defaultValue={guests}
-                className="w-full pl-10 pr-3 py-3 text-gray-900 bg-transparent focus:outline-none"
-                placeholder="Guests"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="mt-4 w-full md:w-auto md:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-md transition-all transform hover:scale-105"
-          >
-            Search
-          </button>
-        </form>
+        <SearchForm
+          defaultCity={city}
+          defaultCheckIn={checkIn}
+          defaultCheckOut={checkOut}
+          defaultGuests={guests}
+        />
       </div>
 
       {/* Apartments Grid */}
