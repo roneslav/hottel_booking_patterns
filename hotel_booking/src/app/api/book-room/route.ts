@@ -1,9 +1,31 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 
+const supabase = supabaseServer();
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const apartment_id = searchParams.get("apartment_id");
+  const start_date = searchParams.get("start_date");
+  const end_date = searchParams.get("end_date");
+
+  if (!apartment_id || !start_date || !end_date) {
+    return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+  }
+
+  const { data: conflict } = await supabase
+    .from("bookings")
+    .select("id")
+    .eq("apartment_id", apartment_id)
+    .lte("start_date", end_date)
+    .gte("end_date", start_date);
+
+  return NextResponse.json({ available: !conflict || conflict.length === 0 });
+}
+
+
 export async function POST(req: Request) {
   const body = await req.json();
-  const supabase = supabaseServer();
 
   const { user_id, apartment_id, start_date, end_date } = body;
 

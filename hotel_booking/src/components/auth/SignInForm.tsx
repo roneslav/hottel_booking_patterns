@@ -39,9 +39,7 @@ export default function SignInForm() {
       });
 
       if (error) throw error;
-
-      // Сесія активується через onAuthStateChange
-      // Не робимо router.push() тут!
+      
     } catch (err: any) {
       setError(err.message || "Invalid email or password");
       setLoading(false);

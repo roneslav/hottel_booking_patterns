@@ -27,8 +27,6 @@ export default function Header() {
         .eq("id", uid)
         .maybeSingle();
 
-        console.log("Profile fetch result:", data, error);
-
       if (error && error.code !== "PGRST116") {
         console.error("Profile fetch error:", error);
       }

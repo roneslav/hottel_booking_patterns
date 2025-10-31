@@ -34,12 +34,29 @@ async function getApartment(id: string): Promise<Apartment> {
   return res.json();
 }
 
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+};
+
 export default async function ApartmentPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }) {
   const { id } = await params;
+  const query = await searchParams;
+
+  const checkIn = query.checkIn;
+  const checkOut = query.checkOut;
+  const guests = query.guests ? parseInt(query.guests, 10) : undefined;
+
+  const checkInStr = checkIn ? formatDate(checkIn) : "";
+  const checkOutStr = checkOut ? formatDate(checkOut) : "";
+  const dateRange = checkInStr && checkOutStr ? `${checkInStr} — ${checkOutStr}` : "Check-in — Check-out";
 
   let apartment: Apartment;
 
@@ -52,6 +69,7 @@ export default async function ApartmentPage({
   const images = apartment.images || (apartment.imageUrl ? [apartment.imageUrl] : []);
   const rating = apartment.rating || 0;
   const reviewsCount = apartment.reviewsCount || 0;
+  const displayGuests = guests ?? apartment.guests ?? 1;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -212,7 +230,7 @@ export default async function ApartmentPage({
                   <Calendar className="h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Check-in — Check-out"
+                    value={dateRange || "Check-in — Check-out"}
                     readOnly
                     className="flex-1 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700"
                   />
@@ -221,7 +239,7 @@ export default async function ApartmentPage({
                   <Users className="h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder={`${apartment.guests || 1} guests`}
+                    value={`${displayGuests} guest${displayGuests > 1 ? "s" : ""}`}
                     readOnly
                     className="flex-1 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700"
                   />
@@ -229,7 +247,7 @@ export default async function ApartmentPage({
               </div>
 
               <Link
-                href={`/book/apartment/${apartment.id}`}
+                href={`/booking/apartment/${apartment.id}`}
                 className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md text-center transition-all transform hover:scale-105"
               >
                 Book Now
