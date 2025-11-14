@@ -58,7 +58,7 @@ export default async function BookApartmentPage({
   const totalPrice = apartment.price * nights;
 
   // Перевірка авторизації
-  const supabase = createServerClient();
+  const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     redirect(`/auth/signin?redirectTo=/book/apartment/${id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`);

@@ -1,3 +1,4 @@
+// components/auth/SignInForm.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -19,7 +20,7 @@ export default function SignInForm() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
-        router.push("/");
+        router.push("/admin"); // Адмін → /admin
         router.refresh();
       }
     });
@@ -33,13 +34,16 @@ export default function SignInForm() {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
-      
+
+      // НЕ ТРЕБА вручну зберігати cookies!
+      // @supabase/ssr зробив це автоматично
+
     } catch (err: any) {
       setError(err.message || "Invalid email or password");
       setLoading(false);
@@ -64,6 +68,7 @@ export default function SignInForm() {
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           required
+          placeholder="hotel_admin@gmail.com"
         />
       </div>
 
@@ -76,6 +81,7 @@ export default function SignInForm() {
           className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           required
           minLength={4}
+          placeholder="123456"
         />
       </div>
 

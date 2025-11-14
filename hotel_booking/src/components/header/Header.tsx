@@ -17,57 +17,52 @@ export default function Header() {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  // ЄДИНИЙ слухач авторизації
   useEffect(() => {
-    const fetchProfile = async (uid: string) => {
-        console.log("Fetching profile for user ID:", uid);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth event:", event, session?.user?.id);
+
+      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setUser(null);
+        }
+      } else if (event === "SIGNED_OUT") {
+        setUser(null);
+      }
+
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
+  const fetchProfile = async (uid: string) => {
+    try {
       const { data, error } = await supabase
         .from("users")
         .select("name, email")
         .eq("id", uid)
-        .maybeSingle();
+        .single();
 
-      if (error && error.code !== "PGRST116") {
-        console.error("Profile fetch error:", error);
-      }
-
-      if (data) {
-        setUser({
-          id: uid,
-          name: data.name,
-          email: data.email,
-        });
-      } else {
-        console.warn("No profile in public.users for ID:", uid);
+      if (error) {
+        console.warn("Profile not found or error:", error.message);
         setUser(null);
+        return;
       }
-    };
 
-    // 1. Початкове завантаження
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      }
-      setLoading(false);
-    };
-    init();
-
-    // 2. Слухач змін
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log("Auth event:", event, session?.user?.id);
-
-        if (event === "SIGNED_IN" && session?.user) {
-          await fetchProfile(session.user.id);
-        } else if (event === "SIGNED_OUT") {
-          setUser(null);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, [supabase]);
+      setUser({
+        id: uid,
+        name: data.name || "User",
+        email: data.email,
+      });
+    } catch (err) {
+      console.error("Unexpected profile fetch error:", err);
+      setUser(null);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -79,8 +74,11 @@ export default function Header() {
     return (
       <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 h-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-full">
-          <div className="bg-gray-200 dark:bg-gray-700 rounded w-32 h-8 animate-pulse" />
-          <div className="bg-gray-200 dark:bg-gray-700 rounded w-24 h-8 animate-pulse" />
+          <div className="flex items-center gap-2">
+            <div className="bg-gray-200 dark:bg-gray-700 rounded w-8 h-8 animate-pulse" />
+            <div className="bg-gray-200 dark:bg-gray-700 rounded w-24 h-6 animate-pulse" />
+          </div>
+          <div className="bg-gray-200 dark:bg-gray-700 rounded w-20 h-8 animate-pulse" />
         </div>
       </header>
     );
@@ -90,16 +88,15 @@ export default function Header() {
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Логотип */}
-          <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700">
+          
+          <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors">
             <Home className="h-7 w-7" />
             <span className="text-xl font-bold">StayHub</span>
           </Link>
 
-          {/* Права частина */}
-          <div className="flex items-center gap-3">
+          <nav className="flex items-center gap-3">
             {user ? (
-              <div className="flex items-center gap-3">
+              <>
                 <Link
                   href="/account"
                   className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-all"
@@ -114,7 +111,7 @@ export default function Header() {
                   <LogOut className="h-4 w-4" />
                   Logout
                 </button>
-              </div>
+              </>
             ) : (
               <>
                 <Link
@@ -126,14 +123,14 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/auth/signin"
-                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-all transform hover:scale-105"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-all"
                 >
                   <LogIn className="h-4 w-4" />
                   Sign in
                 </Link>
               </>
             )}
-          </div>
+          </nav>
         </div>
       </div>
     </header>
