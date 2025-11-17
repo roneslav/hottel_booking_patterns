@@ -65,7 +65,7 @@ export default function AccountPage() {
     };
 
     init();
-  }, [supabase]);
+  }, []);
 
   if (loading) {
     return (

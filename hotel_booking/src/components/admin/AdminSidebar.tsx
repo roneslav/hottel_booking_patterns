@@ -15,6 +15,13 @@ const nav = [
 export default function AdminSidebar() {
   const pathname = usePathname();
 
+  const isActive = (href: string) => {
+    if (href === "/admin") {
+      return pathname === "/admin";
+    }
+    return pathname.startsWith(href);
+  };
+
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 shadow-lg">
       <div className="p-6">
@@ -26,7 +33,7 @@ export default function AdminSidebar() {
             key={href}
             href={href}
             className={`flex items-center gap-3 px-6 py-3 text-sm font-medium transition-colors ${
-              pathname.startsWith(href)
+              isActive(href)
                 ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-r-4 border-blue-600"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
@@ -36,12 +43,6 @@ export default function AdminSidebar() {
           </Link>
         ))}
       </nav>
-      <div className="absolute bottom-0 w-full p-6">
-        <button className="flex items-center gap-3 text-red-600 hover:text-red-700">
-          <LogOut className="h-5 w-5" />
-          Logout
-        </button>
-      </div>
     </aside>
   );
 }

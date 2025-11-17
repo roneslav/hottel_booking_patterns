@@ -14,13 +14,12 @@ export default function SignInForm() {
   const router = useRouter();
   const supabase = createClient();
 
-  // Слухаємо авторизацію
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
-        router.push("/admin"); // Адмін → /admin
+        router.push("/admin");
         router.refresh();
       }
     });
@@ -40,9 +39,6 @@ export default function SignInForm() {
       });
 
       if (error) throw error;
-
-      // НЕ ТРЕБА вручну зберігати cookies!
-      // @supabase/ssr зробив це автоматично
 
     } catch (err: any) {
       setError(err.message || "Invalid email or password");
@@ -68,7 +64,7 @@ export default function SignInForm() {
           onChange={(e) => setEmail(e.target.value)}
           className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           required
-          placeholder="hotel_admin@gmail.com"
+          placeholder="example@gmail.com"
         />
       </div>
 
@@ -81,7 +77,7 @@ export default function SignInForm() {
           className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
           required
           minLength={4}
-          placeholder="123456"
+          placeholder="password"
         />
       </div>
 

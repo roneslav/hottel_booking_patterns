@@ -4,12 +4,13 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Home, UserPlus, LogIn, User, LogOut } from "lucide-react";
+import { Home, UserPlus, LogIn, User, LogOut, Shield } from "lucide-react";
 
 type UserProfile = {
   id: string;
   name: string;
   email: string;
+  is_admin?: boolean;
 };
 
 export default function Header() {
@@ -43,7 +44,7 @@ export default function Header() {
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("name, email")
+        .select("name, email, is_admin")
         .eq("id", uid)
         .single();
 
@@ -57,6 +58,7 @@ export default function Header() {
         id: uid,
         name: data.name || "User",
         email: data.email,
+        is_admin: data.is_admin || false,
       });
     } catch (err) {
       console.error("Unexpected profile fetch error:", err);
@@ -88,13 +90,24 @@ export default function Header() {
     <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          
+
           <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors">
             <Home className="h-7 w-7" />
             <span className="text-xl font-bold">StayHub</span>
           </Link>
 
           <nav className="flex items-center gap-3">
+            {/* АДМІН-ПАНЕЛЬ — ТІЛЬКИ ДЛЯ АДМІНІВ */}
+            {user?.is_admin && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-md transition-all"
+              >
+                <Shield className="h-4 w-4" />
+                Admin Panel
+              </Link>
+            )}
+            
             {user ? (
               <>
                 <Link
