@@ -14,32 +14,34 @@ export async function GET() {
   return NextResponse.json(data);
 }
 
-export async function POST(req: Request) {
-  const supabase = await createServerClient();
-  const body = await req.json();
 
-  const { data, error } = await supabase
-    .from("apartments")
-    .insert(body)
-    .select();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json(data[0], { status: 201 });
-}
+// export async function POST(req: Request) {
+//   const supabase = await createServerClient();
+//   const body = await req.json();
 
-export async function PUT(req: Request) {
-  const supabase = await createServerClient();
-  const { id, ...update } = await req.json();
+//   const { data, error } = await supabase
+//     .from("apartments")
+//     .insert(body)
+//     .select();
 
-  const { data, error } = await supabase
-    .from("apartments")
-    .update(update)
-    .eq("id", id)
-    .select();
+//   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+//   return NextResponse.json(data[0], { status: 201 });
+// }
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json(data[0]);
-}
+// export async function PUT(req: Request) {
+//   const supabase = await createServerClient();
+//   const { id, ...update } = await req.json();
+
+//   const { data, error } = await supabase
+//     .from("apartments")
+//     .update(update)
+//     .eq("id", id)
+//     .select();
+
+//   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+//   return NextResponse.json(data[0]);
+// }
 
 export async function DELETE(req: Request) {
   const supabase = await createServerClient();

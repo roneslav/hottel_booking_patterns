@@ -20,11 +20,19 @@ export default async function EditApartmentPage({
     redirect("/auth/signin");
   }
 
-  const { data: apartment, error: aptError } = await supabase
-    .from("apartments")
-    .select("*, categories(name)")
-    .eq("id", id)
-    .single();
+const { data: apartment, error: aptError } = await supabase
+  .from("apartments")
+  .select(`
+    *,
+    categories(name),
+    apartment_images (
+      id,
+      image_url,
+      sort_order
+    )
+  `)
+  .eq("id", id)
+  .single();
 
   const { data: categories, error: catError } = await supabase
     .from("categories")

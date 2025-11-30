@@ -3,9 +3,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSearch } from "@/lib/searchContext/SearchContext";
 
 export default function BookingForm({ apartment, services }: any) {
   const router = useRouter();
+  const { search, updateSearch } = useSearch();
   const [loading, setLoading] = useState(false);
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
@@ -15,7 +17,7 @@ export default function BookingForm({ apartment, services }: any) {
   // Оновлення підсумку при зміні
   useEffect(() => {
     updateSummary();
-  }, [checkIn, checkOut, guests, selectedServices]);
+  }, [search.checkIn, search.checkOut, search.guests, selectedServices]);
 
   const updateSummary = () => {
     const datesEl = document.getElementById("summary-dates");
@@ -25,7 +27,7 @@ export default function BookingForm({ apartment, services }: any) {
     const servicesEl = document.getElementById("summary-services");
     const servicesList = document.getElementById("services-list");
 
-    if (!checkIn || !checkOut) {
+    if (!search.checkIn || !search.checkOut) {
       if (datesEl) datesEl.textContent = "Not selected";
       if (nightsEl) nightsEl.textContent = "-";
       if (totalEl) totalEl.textContent = "$0";
@@ -33,8 +35,8 @@ export default function BookingForm({ apartment, services }: any) {
       return;
     }
 
-    const inDate = new Date(checkIn);
-    const outDate = new Date(checkOut);
+    const inDate = new Date(search.checkIn);
+    const outDate = new Date(search.checkOut);
     const nights = Math.max(1, Math.ceil((outDate.getTime() - inDate.getTime()) / (1000 * 3600 * 24)));
 
     const apartmentCost = Number(apartment.price) * Number(nights);
@@ -47,7 +49,7 @@ export default function BookingForm({ apartment, services }: any) {
     // Оновлюємо DOM
     if (datesEl) datesEl.textContent = `${inDate.toLocaleDateString("uk-UA")} – ${outDate.toLocaleDateString("uk-UA")}`;
     if (nightsEl) nightsEl.textContent = `${nights} ${nights === 1 ? "night" : nights < 5 ? "nights" : "nights"}`;
-    if (guestsEl) guestsEl.textContent = guests.toString();
+    if (guestsEl) guestsEl.textContent = search.guests.toString();
     if (totalEl) totalEl.textContent = `$${total.toFixed(2)}`;
 
     if (selected.length > 0 && servicesList) {
@@ -65,7 +67,7 @@ export default function BookingForm({ apartment, services }: any) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!checkIn || !checkOut || new Date(checkOut) <= new Date(checkIn)) {
+    if (!search.checkIn || !search.checkOut || new Date(search.checkOut) <= new Date(search.checkIn)) {
       alert("Please select valid dates");
       return;
     }
@@ -76,38 +78,44 @@ export default function BookingForm({ apartment, services }: any) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         apartment_id: apartment.id,
-        check_in: checkIn,
-        check_out: checkOut,
-        guests,
+        check_in: search.checkIn,
+        check_out: search.checkOut,
+        guests: search.guests,
         services: selectedServices,
       }),
     });
 
     if (res.ok) {
+      const result = await res.json();
+      if (result.bonusPoints > 0) {
+        alert(`Booking successful! You have earned ${result.bonusPoints} bonus points!`);
+      } else {
+        alert("Booking successful!");
+      }
       router.push("/booking/success");
     } else {
       const err = await res.json();
       alert(err.error || "Booking error");
     }
     setLoading(false);
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 space-y-6">
       {/* Твій попередній код форми без змін */}
       <div>
         <label className="block text-sm font-medium mb-2">Check-in</label>
-        <input type="date" required value={checkIn} onChange={e => setCheckIn(e.target.value)} min={new Date().toISOString().split("T")[0]} className="w-full px-4 py-3 border rounded-md dark:bg-gray-700" />
+        <input type="date" required disabled value={search.checkIn} className="w-full px-4 py-3 border rounded-md dark:bg-gray-700" />
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-2">Check-out</label>
-        <input type="date" required value={checkOut} onChange={e => setCheckOut(e.target.value)} min={checkIn || new Date().toISOString().split("T")[0]} className="w-full px-4 py-3 border rounded-md dark:bg-gray-700" />
+        <input type="date" required disabled value={search.checkOut} className="w-full px-4 py-3 border rounded-md dark:bg-gray-700" />
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-2">Number of guests</label>
-        <select value={guests} onChange={e => setGuests(parseInt(e.target.value))} className="w-full px-4 py-3 border rounded-md dark:bg-gray-700">
+        <select value={search.guests} disabled className="w-full px-4 py-3 border rounded-md dark:bg-gray-700">
           {[...Array(apartment.guests || 6)].map((_, i) => (
             <option key={i + 1} value={i + 1}>{i + 1} guest{i > 0 ? (i > 3 ? "s" : "s") : ""}</option>
           ))}
@@ -121,18 +129,15 @@ export default function BookingForm({ apartment, services }: any) {
             {services.map((s: any) => (
               <label key={s.id} className="flex items-center gap-3 cursor-pointer">
                 <input
-                  type="checkbox"
-                  value={s.id}
-                  checked={selectedServices.includes(s.id)}
-                  onChange={e => {
-                    setSelectedServices(prev =>
-                      e.target.checked
-                        ? [...prev, s.id]
-                        : prev.filter(id => id !== s.id)
-                    );
-                  }}
-                  className="w-5 h-5 text-blue-600 rounded"
-                />
+                      type="checkbox"
+                      checked={selectedServices.includes(s.id)}
+                      onChange={(e) => {
+                        setSelectedServices(prev =>
+                          e.target.checked ? [...prev, s.id] : prev.filter(id => id !== s.id)
+                        );
+                      }}
+                      className="w-5 h-5 text-blue-600 rounded"
+                    />
                 <span>{s.name} — ${s.price}</span>
               </label>
             ))}
@@ -142,7 +147,7 @@ export default function BookingForm({ apartment, services }: any) {
 
       <button
         type="submit"
-        disabled={loading || !checkIn || !checkOut}
+        disabled={loading || !search.checkIn || !search.checkOut}
         className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-4 rounded-md text-lg transition"
       >
         {loading ? "Booking..." : "Book Now"}

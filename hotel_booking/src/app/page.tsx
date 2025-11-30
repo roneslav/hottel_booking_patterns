@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, MapPin, Calendar, Users, Star, Check, Globe, Headphones, Shield } from "lucide-react";
+import SearchForm from "@/components/forms/SearchForm";
 
 export default function Home() {
   const router = useRouter();
@@ -40,96 +41,7 @@ export default function Home() {
 
       {/* Search Bar */}
       <div className="max-w-7xl mx-auto px-6 -mt-8 relative z-10">
-        <div className="bg-white rounded-lg shadow-xl p-4 border-4 border-yellow-400">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
-            {/* City */}
-            <div className="relative">
-              <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Where are you going?"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="w-full pl-10 pr-3 py-3 text-gray-900 placeholder-gray-500 bg-transparent focus:outline-none"
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-              />
-            </div>
-
-            {/* Check-in */}
-            <div className="relative">
-              <Calendar className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <input
-                type="date"
-                value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full pl-10 pr-3 py-3 text-gray-900 bg-transparent focus:outline-none cursor-pointer"
-                min={new Date().toISOString().split("T")[0]}
-              />
-            </div>
-
-            {/* Check-out */}
-            <div className="relative">
-              <Calendar className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <input
-                type="date"
-                value={checkOut}
-                onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full pl-10 pr-3 py-3 text-gray-900 bg-transparent focus:outline-none cursor-pointer"
-                min={checkIn || new Date().toISOString().split("T")[0]}
-              />
-            </div>
-
-            {/* Guests */}
-            <div className="relative">
-              <Users className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <button
-                onClick={() => setShowGuests(!showGuests)}
-                className="w-full pl-10 pr-3 py-3 text-left text-gray-900 bg-transparent focus:outline-none"
-              >
-                {adults} {adults === 1 ? "adult" : "adults"}
-              </button>
-
-              {showGuests && (
-                <div className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-gray-800 rounded-lg shadow-xl p-4 z-50">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Adults</span>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setAdults(Math.max(1, adults - 1))}
-                        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                        disabled={adults <= 1}
-                      >
-                        -
-                      </button>
-                      <span className="w-8 text-center">{adults}</span>
-                      <button
-                        onClick={() => setAdults(Math.min(4, adults + 1))}
-                        className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                        disabled={adults >= 4}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">Max 4 adults</p>
-                </div>
-              )}
-            </div>
-
-            {/* Search Button */}
-            <div className="relative">
-              <button
-                onClick={handleSearch}
-                disabled={!city.trim()}
-                className="mt-4 w-full md:w-auto md:mt-0 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-3 px-8 rounded-md transition-all transform hover:scale-105 disabled:transform-none"
-              >
-                Search
-              </button>
-            </div>
-          </div>
-
-          
-        </div>
+          <SearchForm />
       </div>
 
       {/* Why Book With Us */}

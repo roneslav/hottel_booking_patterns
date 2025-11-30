@@ -2,9 +2,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, Star, Home, Wifi, Car, Coffee, Users, Calendar, ChevronLeft } from "lucide-react";
+import { useSearch } from "@/lib/searchContext/SearchContext";
+import BookingCard from "@/components/booking/BookingCard";
 
 type Apartment = {
-  id: number;
+  id: string;
   title: string;
   description: string | null;
   price: number;
@@ -105,27 +107,44 @@ export default async function ApartmentPage({
         </div>
 
         {/* Gallery */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div className="grid md:grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           {images.length > 0 ? (
-            <>
-              <div className="md:col-span-1 md:row-span-2">
+            <div className="grid grid-cols-4 grid-rows-2 gap-4 mb-8 h-96 md:h-[500px] rounded-xl overflow-hidden shadow-xl">
+              {/* Головне фото — займає ліву половину */}
+              <div className="col-span-4 md:col-span-2 row-span-2">
                 <img
                   src={images[0]}
                   alt={apartment.title}
-                  className="w-full h-full md:h-full object-cover rounded-lg shadow-md"
+                  className="w-full h-full object-cover"
                 />
               </div>
-              {images.slice(1, 3).map((img, i) => (
-                <img
+
+              {/* Решта 4 фото справа */}
+              {images.slice(1, 5).map((img, i) => (
+                <div
                   key={i}
-                  src={img}
-                  alt={`${apartment.title} - ${i + 2}`}
-                  className="w-full h-48 md:h-full object-cover rounded-lg shadow-md"
-                />
+                  className={`${i === 3 ? "relative" : ""} overflow-hidden`}
+                >
+                  <img
+                    src={img}
+                    alt={`${apartment.title} - ${i + 2}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {i === 3 && images.length > 5 && (
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                      <button
+                        onClick={() => alert("Full gallery coming soon!")} // або модалка
+                        className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition"
+                      >
+                        +{images.length - 5} more
+                      </button>
+                    </div>
+                  )}
+                </div>
               ))}
-            </>
+            </div>
           ) : (
-            <div className="col-span-2 h-96 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+            <div className="h-96 bg-gray-200 dark:bg-gray-700 rounded-xl flex items-center justify-center">
               <Home className="h-16 w-16 text-gray-400" />
             </div>
           )}
@@ -217,46 +236,11 @@ export default async function ApartmentPage({
 
           {/* Booking Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg sticky top-6">
-              <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-3xl font-bold text-gray-900 dark:text-white">
-                  ${apartment.price}
-                </span>
-                <span className="text-gray-500">/ night</span>
-              </div>
-
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={dateRange || "Check-in — Check-out"}
-                    readOnly
-                    className="flex-1 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700"
-                  />
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Users className="h-5 w-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={`${displayGuests} guest${displayGuests > 1 ? "s" : ""}`}
-                    readOnly
-                    className="flex-1 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700"
-                  />
-                </div>
-              </div>
-
-              <Link
-                href={`/booking/apartment/${apartment.id}`}
-                className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md text-center transition-all transform hover:scale-105"
-              >
-                Book Now
-              </Link>
-
-              <p className="text-xs text-center text-gray-500 mt-3">
-                You won't be charged yet
-              </p>
-            </div>
+            <BookingCard
+              apartmentId={apartment.id}
+              price={apartment.price}
+              maxGuests={apartment.guests || 4}
+            />
           </div>
         </div>
       </div>
